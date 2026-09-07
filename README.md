@@ -71,6 +71,14 @@ stockbit_rpc.vbs
 python stockbit_rpc.pyw
 ```
 
+### Stopping the app
+
+Double-click:
+
+```
+stockbit_rpc_stop.vbs
+```
+
 ### Option C: Run automatically on Windows startup
 
 1. Press `Win + R`, type `shell:startup`, then press Enter.
@@ -117,14 +125,16 @@ rpc.update(
 6. **Error `ModuleNotFoundError: No module named 'psutil'`** — Dependencies not installed. Run `pip install -r requirements.txt`.
 7. **`pythonw` not recognized** — Python is not in PATH. Reinstall Python with the "Add to PATH" option checked.
 8. **Status doesn't disappear after Stockbit is closed** — Scan delay. Wait up to 5 seconds (the loop interval).
+9. **Can't stop the app** — It runs hidden as `pythonw.exe`. Double-click `stockbit_rpc_stop.vbs`, or use Task Manager: Details tab → find `pythonw.exe` → End task.
 
 ## Project Structure
 
 ```
 stockbit-discord-presence/
-├── stockbit_rpc.vbs     # Hidden launcher (double-click this)
-├── stockbit_rpc.pyw     # Main script
-├── requirements.txt     # Python dependencies
-├── README.md            # This document
-└── .gitignore           # Files ignored by git (.venv)
+├── stockbit_rpc.vbs        # Hidden launcher (double-click this)
+├── stockbit_rpc_stop.vbs   # Stop the running app
+├── stockbit_rpc.pyw        # Main script
+├── requirements.txt        # Python dependencies
+├── README.md               # This document
+└── .gitignore              # Files ignored by git (.venv)
 ```
