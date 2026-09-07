@@ -54,23 +54,20 @@ uv pip install -r requirements.txt
 
 ## How to Run
 
-### Option A: Run in the background without a console window (recommended)
+### Option A: Double-click the launcher (recommended)
 
-Double-click the file:
+Double-click:
 
 ```
-stockbit_rpc.pyw
+stockbit_rpc.vbs
 ```
 
-Or from a terminal:
-
-```cmd
-pythonw stockbit_rpc.pyw
-```
+> Do **not** double-click `stockbit_rpc.pyw` directly. Without a system-wide Python install (e.g. when using uv only), Windows has no `.pyw` file association and nothing will happen.
 
 ### Option B: Run with a console (for debugging)
 
-```cmd
+```powershell
+.venv\Scripts\Activate.ps1
 python stockbit_rpc.pyw
 ```
 
@@ -78,15 +75,15 @@ python stockbit_rpc.pyw
 
 1. Press `Win + R`, type `shell:startup`, then press Enter.
 2. Right-click inside that folder → **New → Shortcut**.
-3. In the location field, enter the path to the venv's `pythonw.exe` followed by the path to the script (in one target, separated by a space):
+3. In the location field, enter the path to `stockbit_rpc.vbs` in quotes:
 
    ```
-   "C:\path\to\stockbit-discord-presence\.venv\Scripts\pythonw.exe" "C:\path\to\stockbit-discord-presence\stockbit_rpc.pyw"
+   "C:\path\to\stockbit-discord-presence\stockbit_rpc.vbs"
    ```
 
-   Adjust both paths to match your project location.
+   Adjust the path to match your project location.
 4. Click **Next**, name the shortcut (e.g. `Stockbit RPC`), then click **Finish**.
-5. The script now runs automatically every time the computer starts, using the project's venv Python.
+5. The script now runs automatically and hidden every time the computer starts, using the project's venv Python.
 
 ## Configuration
 
@@ -125,8 +122,9 @@ rpc.update(
 
 ```
 stockbit-discord-presence/
+├── stockbit_rpc.vbs     # Hidden launcher (double-click this)
 ├── stockbit_rpc.pyw     # Main script
 ├── requirements.txt     # Python dependencies
 ├── README.md            # This document
-└── .gitignore           # Files ignored by git
+└── .gitignore           # Files ignored by git (.venv)
 ```
