@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/ikanlelebakar/stockbit-discord-presence/discussions
+    about: Ask anything about setup or usage before opening an issue.
