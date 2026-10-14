@@ -132,6 +132,15 @@ Settings are saved to:
 The hidden RPC script re-reads this file every 5 seconds — changes from the
 GUI apply without restarting it.
 
+### Enriched activity (Windows only)
+
+On Windows the loop also reads Stockbit's own window titles (`Buy • BBCA`,
+`Sell • BBCA`, `Fast Order • BBCA`) and appends them to your `details` text,
+together with a `Fokus`/`Background` note and an `Idle` flag after 5 minutes
+without input. The main `Stockbit` window title carries no page signal: when
+no order dialog is open, no ticker is shown. Only the 4-letter ticker pattern
+is displayed; portfolio, order, and account data never leave your PC.
+
 ### Editing the script directly
 
 `CLIENT_ID` and `LARGE_IMAGE_KEY` live at the top of `backend/presence.py`:

@@ -5,21 +5,37 @@ The GUI owns settings; this module owns the single pypresence connection.
 
 import sys
 import time
-from frontend.config import load_config
-from system_probes import STOCKBIT_PROCESS_NAME, is_process_running
+from system_probes import STOCKBIT_PROCESS_NAME, is_process_running, stockbit_activity
 
 CLIENT_ID = "1546369679885344809"
 LARGE_IMAGE_KEY = "stockbit_logo_-_light_-_5389x2048_-_zonalogo_com_4_"
 
 
-def build_payload(config: dict, start: float) -> dict:
+def enrich_details(config: dict, activity: dict | None) -> dict:
+    """Append ticker + focus/idle notes to the user's own config text.
+
+    Ticker comes only from the allowlisted `` • TICKER`` dialog pattern; no account data ever reaches Discord.
+    """
+    details = config["details"]
+    state = config["state"]
+    if activity and activity.get("running"):
+        if activity.get("ticker"):
+            details = f"{details} • ${activity['ticker']}"
+        focus_note = "Fokus" if activity.get("focused") else "Background"
+        idle_note = " • Idle" if activity.get("idle") else ""
+        details = f"{details} ({focus_note}{idle_note})"
+        if activity.get("idle"):
+            state = "Idle"
     return {
-        "state": config["state"],
-        "details": config["details"],
+        "state": state,
+        "details": details,
         "large_text": config["large_text"],
         "large_image": LARGE_IMAGE_KEY,
-        "start": start,
     }
+
+
+def build_payload(config: dict, start: float, activity: dict | None = None) -> dict:
+    return {**enrich_details(config, activity), "start": start}
 
 
 class PresenceController:
@@ -31,10 +47,11 @@ class PresenceController:
     - Any transport failure: drop the client and retry next tick.
     """
 
-    def __init__(self, client_factory=None, config_loader=None, is_running_probe=None):
+    def __init__(self, client_factory=None, config_loader=None, is_running_probe=None, activity_probe=None):
         self._client_factory = client_factory or _default_client_factory
         self._config_loader = config_loader or load_config
         self._is_running = is_running_probe or (lambda: False)
+        self._activity_probe = activity_probe or stockbit_activity
 
         self._client = None
         self._connected = False
@@ -54,7 +71,7 @@ class PresenceController:
             if not self._connected:
                 return
 
-        payload = build_payload(config, self._start)
+        payload = build_payload(config, self._start, self._safe_activity())
         if payload != self._last_payload:
             try:
                 self._client.update(**payload)
@@ -63,6 +80,14 @@ class PresenceController:
                 self._disconnect()
                 return
             self._last_payload = payload
+
+
+    def _safe_activity(self) -> dict | None:
+        try:
+            activity = self._activity_probe()
+        except Exception:
+            return None
+        return activity if isinstance(activity, dict) else None
 
     def _connect(self):
         try:
