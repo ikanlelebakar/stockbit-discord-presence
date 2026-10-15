@@ -3,12 +3,28 @@
 The GUI owns settings; this module owns the single pypresence connection.
 """
 
+import os
 import sys
 import time
+from frontend.config import APP_DIR_NAME, load_config
 from system_probes import STOCKBIT_PROCESS_NAME, is_process_running, stockbit_activity
 
 CLIENT_ID = "1546369679885344809"
 LARGE_IMAGE_KEY = "stockbit_logo_-_light_-_5389x2048_-_zonalogo_com_4_"
+
+_MAX_TEXT_LEN = 128
+_LOG_FILE_NAME = "rpc.log"
+
+
+def _truncate(text: str) -> str:
+    return text[:_MAX_TEXT_LEN] if isinstance(text, str) else text
+
+
+def _log_path() -> str:
+    appdata = os.environ.get("APPDATA")
+    if appdata:
+        return os.path.join(appdata, APP_DIR_NAME, _LOG_FILE_NAME)
+    return os.path.join(os.getcwd(), _LOG_FILE_NAME)
 
 
 def enrich_details(config: dict, activity: dict | None) -> dict:
@@ -27,9 +43,9 @@ def enrich_details(config: dict, activity: dict | None) -> dict:
         if activity.get("idle"):
             state = "Idle"
     return {
-        "state": state,
-        "details": details,
-        "large_text": config["large_text"],
+        "state": _truncate(state),
+        "details": _truncate(details),
+        "large_text": _truncate(config["large_text"]),
         "large_image": LARGE_IMAGE_KEY,
     }
 
@@ -59,7 +75,11 @@ class PresenceController:
         self._start: float = 0.0
 
     def tick(self):
-        config = self._config_loader()
+        try:
+            config = self._config_loader()
+        except Exception as exc:
+            _warn(f"config load failed: {exc}")
+            return
         running = self._is_running()
 
         if not running:
@@ -122,7 +142,13 @@ def _default_client_factory():
 
 
 def _warn(message: str) -> None:
-    print(f"[stockbit-rpc] {message}", file=sys.stderr)
+    line = f"[stockbit-rpc] {message}"
+    print(line, file=sys.stderr)
+    try:
+        with open(_log_path(), "a", encoding="utf-8") as handle:
+            handle.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
+    except OSError:
+        pass
 
 
 def run_forever(
